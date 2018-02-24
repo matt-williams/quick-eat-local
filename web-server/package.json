@@ -12,6 +12,8 @@
     "express": "^4.16.2",
     "json-override": "^0.2.0",
     "letsencrypt-express": "^2.0.6",
+    "pg": "^7.4.1",
+    "pg-escape": "^0.2.0",
     "quickbooks": "^1.0.4"
   }
 }

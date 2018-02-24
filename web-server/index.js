@@ -2,11 +2,10 @@
 
 const override = require('json-override');
 const config = override(require('./config.json'), process.env);
-
-console.log(config);
-
 const express = require('express');
 const quickbooks = require('quickbooks');
+const pg = require('pg');
+const pgEscape = require('pg-escape');
 
 const qbo = new quickbooks(config.QUICKBOOKS_CONSUMER_KEY,
                            config.QUICKBOOKS_CONSUMER_SECRET,
@@ -18,7 +17,24 @@ const qbo = new quickbooks(config.QUICKBOOKS_CONSUMER_KEY,
                            true,
                            true); // turn debugging on
 
+const pgPool = new pg.Pool({
+  user: "postgres",
+  password: "quick-eat-local",
+  database: "postgres",
+  host: config.DB_HOSTNAME,
+  port: 5432
+});
+
 const app = express();
+
+app.get('/api/v1/stores', async (req, res) => {
+  var pgClient = await pgPool.connect();
+  var query = 'SELECT 1';
+  pgClient.query(query, (err, results) => {
+    pgClient.release();
+    res.json(results.rows);
+  });
+});
 
 app.get('/api/v1/orders', function (req, res) {
   res.json(
