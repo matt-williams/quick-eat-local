@@ -16,6 +16,9 @@ sudo n stable
 
 # Allow node to bind to ports 80 and 443
 sudo setcap cap_net_bind_service=+ep `readlink -f \`which node\``
+
+# Install Angular2 CLI tools
+npm install -g @angular/cli
 ```
 
 ## Deployment
