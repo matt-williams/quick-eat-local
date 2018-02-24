@@ -1,6 +1,8 @@
 # quick-eat-local
 Fast, convenient foodhall service
 
+![Quick Eat Local Icon](quick-eat-local.png)
+
 ##
 
 ```
