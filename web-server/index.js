@@ -1,15 +1,19 @@
 'use strict';
 
-const config = require('./config.json');
+const override = require('json-override');
+const config = override(require('./config.json'), process.env);
+
+console.log(config);
+
 const express = require('express');
 const quickbooks = require('quickbooks');
 
-const qbo = new quickbooks(config.CONSUMER_KEY,
-                           config.CONSUMER_SECRET,
-                           config.OAUTH_TOKEN,
-                           config.OAUTH_TOKEN_SECRET,
-                           config.REALM_ID,
-                           config.REFRESH_TOKEN,
+const qbo = new quickbooks(config.QUICKBOOKS_CONSUMER_KEY,
+                           config.QUICKBOOKS_CONSUMER_SECRET,
+                           config.QUICKBOOKS_OAUTH_TOKEN,
+                           config.QUICKBOOKS_OAUTH_TOKEN_SECRET,
+                           config.QUICKBOOKS_REALM_ID,
+                           config.QUICKBOOKS_REFRESH_TOKEN,
                            "2.0",
                            true,
                            true); // turn debugging on
@@ -46,9 +50,9 @@ app.get('/api/v1/orders', function (req, res) {
 app.use('/', express.static('public'));
  
 require('letsencrypt-express').create({
-  server: 'staging',
-  email: 'matwilliams@hotmail.com',
+  server: config.LETSENCRYPT_SERVER,
+  email: config.LETSENCRYPT_EMAIL,
   agreeTos: true,
-  approveDomains: [ 'quick.eat.local.uk.to' ],
+  approveDomains: config.LETSENCRYPT_DOMAINS,
   app: app
 }).listen(80, 443);
