@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'quick-eat-local-icons';
-  src:  url('fonts/quick-eat-local-icons.eot?ilhv9n');
-  src:  url('fonts/quick-eat-local-icons.eot?ilhv9n#iefix') format('embedded-opentype'),
-    url('fonts/quick-eat-local-icons.ttf?ilhv9n') format('truetype'),
-    url('fonts/quick-eat-local-icons.woff?ilhv9n') format('woff'),
-    url('fonts/quick-eat-local-icons.svg?ilhv9n#quick-eat-local-icons') format('svg');
+  src:  url('quick-eat-local-icons.eot?8xq6p');
+  src:  url('quick-eat-local-icons.eot?8xq6p#iefix') format('embedded-opentype'),
+    url('quick-eat-local-icons.ttf?8xq6p') format('truetype'),
+    url('quick-eat-local-icons.woff?8xq6p') format('woff'),
+    url('quick-eat-local-icons.svg?8xq6p#quick-eat-local-icons') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -24,6 +24,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-quick-eat-local-nostroke-bw:before {
+  content: "\e91a";
+}
 .icon-quick-eat-local-icon .path1:before {
   content: "\e900";
   color: rgb(255, 192, 0);
