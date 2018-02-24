@@ -29,4 +29,6 @@ sudo apt-get install -y docker-ce
 
 # Start Postgres in a container
 sudo docker run --name quick-eat-local-db -e POSTGRES_PASSWORD=quick-eat-local -p 5432:5432 -d --restart=always postgres
+
+sudo docker run -i --rm --link quick-eat-local-db:postgres -e PGPASSWORD=quick-eat-local postgres psql -h postgres -U postgres < schema.sql
 ```

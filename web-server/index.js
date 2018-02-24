@@ -3,6 +3,7 @@
 const override = require('json-override');
 const config = override(require('./config.json'), process.env);
 const express = require('express');
+const session = require('express-session');
 const quickbooks = require('quickbooks');
 const pg = require('pg');
 const pgEscape = require('pg-escape');
@@ -26,6 +27,18 @@ const pgPool = new pg.Pool({
 });
 
 const app = express();
+
+app.use(session({
+  store: new (require('connect-pg-simple')(session))({pool: pgPool}),
+  secret: config.SESSION_COOKIE_SECRET,
+  saveUninitialized: false,
+  resave: false,
+  cookie: {
+    secure: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  }
+}));
+// Can now read/write from req.session...
 
 app.get('/api/v1/stores', async (req, res) => {
   var pgClient = await pgPool.connect();
