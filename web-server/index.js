@@ -152,6 +152,7 @@ app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
         var response = {};
         response.timestamp = timestamp;
         response.vendor_id = vendorId;
+        response.order_id = results.Id;
         response.pickup_id = pickupId;
         response.items = order;
         response.ready = false;
