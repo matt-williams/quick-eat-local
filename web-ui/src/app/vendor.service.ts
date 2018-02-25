@@ -8,12 +8,12 @@ import 'rxjs/add/operator/map';
 
 @Injectable()
 export class VendorService {
-  private vendorsUrl = 'http://quick.eat.local.uk.to:8081/api/v1/vendors';
+  private API_BASE_URL = 'http://quick.eat.local.uk.to:8081/api/v1';
 
   constructor(private http: HttpClient) { }
 
   getVendors(location: string): Observable<Vendor[]> {
-    var promise = this.http.get<Vendor[]>(this.vendorsUrl);
+    var promise = this.http.get<Vendor[]>(this.API_BASE_URL + '/vendors');
     return promise;
   }
 }
