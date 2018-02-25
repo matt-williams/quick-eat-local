@@ -9,13 +9,17 @@
   },
   "author": "Matt Williams <matwilliams@hotmail.com>",
   "dependencies": {
+    "async": "^2.6.0",
+    "body-parser": "^1.18.2",
     "connect-pg-simple": "^4.2.1",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
     "json-override": "^0.2.0",
     "letsencrypt-express": "^2.0.6",
+    "node-quickbooks": "^2.0.24",
     "pg": "^7.4.1",
     "pg-escape": "^0.2.0",
-    "quickbooks": "^1.0.4"
+    "quickbooks": "^1.0.4",
+    "uuid": "^3.2.1"
   }
 }
