@@ -101,14 +101,14 @@ app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
   var vendorId = req.params.vendorId;
   var qbo = selectQbo(vendorId);
 
-  // Get item ids
+  // Compute line item amount - synchronous 
   var parallel = [];
   for(var i = 0; i < order.length; i++) {
     parallel[i] = (function(i) {return function (callback) { qbo.getItem(order[i].item_id, callback) }})(i);
   }
 
-  // Compute line item amount - synchronous 
   async.parallel(parallel, function (err, items) {
+
     // Create sales receipt
     var line = [];
     var salesReceipt = {};
@@ -128,7 +128,16 @@ app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
 
     var transaction = {};
     transaction.Line = line;
-//    console.log(transaction);
+
+    // Get the names of the items
+    for(var i = 0; i < order.length; i++) {
+      for(var j = 0; j < items.length; j++) {
+        if(order[i].item_id == items[j].Id) {
+          order[i].item_name = items[j].Name;
+        }
+      }
+    }
+
     qbo.createSalesReceipt(transaction, async (err, results) => {
       if(err) {
         console.log(err.Fault.Error);
@@ -143,7 +152,7 @@ app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
         var pickupId = sequence.rows[0].nextval;
 //      const complete = await pgClient.query("SELECT DISTINCT complete FROM orders WHERE vendor_id=$1 AND order_id=$2;", [vendorId, results.Id]);
         for(var ord of order) {
-          pgClient.query('INSERT INTO orders(vendor_id, order_id, item_id, qty_ordered, qty_ready, pickup_id, complete, timestamp) VALUES($1, $2, $3, $4, $5, $6, $7, $8);', [vendorId, results.Id, ord.item_id, ord.qty_ordered, 0, pickupId, false, timestamp]);
+          pgClient.query('INSERT INTO orders(vendor_id, order_id, item_id, qty_ordered, qty_ready, pickup_id, complete, timestamp, item_name) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);', [vendorId, results.Id, ord.item_id, ord.qty_ordered, 0, pickupId, false, timestamp, ord.item_name]);
           ord.qty_ready = 0;
         }
         pgClient.release();
@@ -231,6 +240,25 @@ app.post('/api/v1/vendors/:vendorId/orders/:orderId/items/:itemId', async (req, 
           pgClient.release();
         }
       });
+    }
+  });
+});
+
+// View a particular order
+app.get('/api/v1/vendors/:vendorId/orders/:orderId', async (req, res) => {
+
+  var vendorId = req.params.vendorId;
+  var orderId = req.params.orderId;
+
+  var pgClient = await pgPool.connect();
+  var query = 'SELECT * FROM orders WHERE vendor_id=$1 AND order_id=$2';
+  pgClient.query(query, [vendorId, orderId], (err, results) => {
+    if(err) {
+      console.log(err);
+      res.err;
+    } else {
+       pgClient.release();
+       res.json(results.rows);
     }
   });
 });
