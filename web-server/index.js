@@ -173,35 +173,6 @@ app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
   });
 });
 
-
-  //res.json(
-  //  {
-  //    orders: [
-  //      {
-  //        timestamp: 123456789, // ms since epoch
-  //        id: 23232,
-  //        pickup_id: 12, // 01-99
-  //        items: [
-  //          {
-  //            quantity: 3,
-  //            id: 12567,
-  //            description: "Phad Thai - Tofu",
-  //            ready: 3,
-  //          },
-  //          {
-  //            quantity: 2,
-  //            id: 12569,
-  //            description: "Thai Green Curry - Chicken",
-  //            ready: 1,
-  //          },
-  //        ],
-  //        ready: false,
-  //        complete: false
-  //      }
-  //    ]
-  //  }
-  //);
-
 // Update number of ready items for a specific order
 app.post('/api/v1/vendors/:vendorId/orders/:orderId/items/:itemId', async (req, res) => {
 
@@ -258,7 +229,37 @@ app.get('/api/v1/vendors/:vendorId/orders/:orderId', async (req, res) => {
       res.err;
     } else {
        pgClient.release();
-       res.json(results.rows);
+       var response = {};
+       var orders = [];
+       var order = {};
+       order.timestamp = results.rows[0].timestamp;
+       order.order_id = results.rows[0].order_id;
+       order.pickup_id = results.rows[0].pickup_id;
+       order.complete = results.rows[0].complete;
+       var items = [];
+       var rows = results.rows;
+       for(var row of rows) {
+         var item = {};
+         item.item_id = row.item_id;
+         item.item_name = row.item_name;
+         item.qty_ordered = row.qty_ordered;
+         item.qty_ready = row.qty_ready;
+         if(item.qty_ordered == item.qty_ready) {
+           item.ready = true;
+         }
+         items.push(item);
+       }
+       order.items = items;
+       for(var item of items) {
+         if(item.ready == true) {
+           order.ready = true;
+         } else {
+           order.ready = false;
+           break;
+         }
+       }
+       orders.push(order);
+       res.json(orders);
     }
   });
 });
