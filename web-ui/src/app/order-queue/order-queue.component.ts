@@ -33,16 +33,8 @@ export class OrderQueueComponent implements OnInit {
     this.sub = this.route.params.subscribe(params => {
       this.vendorId = params['vendorId'];
     
-      if (this.poll) {
-        this.poll.unsubscribe();
-      }
       this.doQuery();
-      this.poll = Observable.interval(5000).switchMap((_1, _2) => {
-        return this.orderService.getOrders(this.vendorId);
-      }).subscribe(orders => {
-        console.log(orders);
-        this.dataSource = new MatTableDataSource(orders);
-      });
+      this.doPoll();
     });
   }
 
@@ -50,6 +42,23 @@ export class OrderQueueComponent implements OnInit {
     return this.orderService.getOrders(this.vendorId).subscribe(orders => {
       console.log(orders);
       this.dataSource = new MatTableDataSource(orders);
+    });
+  }
+
+  doPoll() {
+    if (this.poll) {
+      this.poll.unsubscribe();
+    }
+    this.poll = Observable.interval(4000).switchMap((_1, _2) => {
+      return this.orderService.getOrders(this.vendorId);
+    }).subscribe(orders => {
+      if (orders) {
+        console.log(orders);
+        this.dataSource = new MatTableDataSource(orders);
+      }
+    }, (e) => {
+      console.log("Got error - trying again", e);
+      this.doPoll();
     });
   }
 

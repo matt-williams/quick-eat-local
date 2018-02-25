@@ -33,21 +33,34 @@ export class WaitOrderComponent implements OnInit {
       this.vendorId = params['vendorId'];
       this.orderId = params['orderId'];
     
-      if (this.poll) {
-        this.poll.unsubscribe();
+      this.doQuery();
+      this.doPoll();
+    });
+  }
+
+  doQuery() {
+    return this.orderService.getOrder(this.vendorId, this.orderId).subscribe(order => {
+      console.log(order);
+      this.order = order;
+      this.dataSource = new MatTableDataSource(order.items);
+    });
+  }
+
+  doPoll() {
+    if (this.poll) {
+      this.poll.unsubscribe();
+    }
+    this.poll = Observable.interval(4000).switchMap((_1, _2) => {
+      return this.orderService.getOrder(this.vendorId, this.orderId);
+    }).subscribe(order => {
+      if (order) {
+        console.log(order);
+        this.order = order;
+        this.dataSource = new MatTableDataSource(order.items);
       }
-      this.orderService.getOrder(this.vendorId, this.orderId).subscribe(order => {
-        console.log(order);
-        this.order = order;
-        this.dataSource = new MatTableDataSource(order.items);
-      });
-      this.poll = Observable.interval(5000).switchMap((_1, _2) => {
-        return this.orderService.getOrder(this.vendorId, this.orderId);
-      }).subscribe(order => {
-        console.log(order);
-        this.order = order;
-        this.dataSource = new MatTableDataSource(order.items);
-      });
+    }, (e) => {
+      console.log("Got error - trying again", e);
+      this.doPoll();
     });
   }
 
