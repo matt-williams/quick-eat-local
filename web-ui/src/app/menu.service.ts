@@ -8,7 +8,7 @@ import 'rxjs/add/operator/map';
 
 @Injectable()
 export class MenuService {
-  private API_BASE_URL = 'http://quick.eat.local.uk.to:8081/api/v1';
+  private API_BASE_URL = '/api/v1';
 
   constructor(private http: HttpClient) { }
 
