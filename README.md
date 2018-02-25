@@ -1,7 +1,9 @@
-# quick-eat-local
+# Quick Eat Local
 Fast, convenient foodhall service
 
 ![Quick Eat Local Icon](quick-eat-local.png)
+
+Try it at [https://quick.eat.local.uk.to/].
 
 ## Local development
 
