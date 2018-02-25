@@ -9,6 +9,12 @@ const pg = require('pg');
 const pgEscape = require('pg-escape');
 const bodyParser = require('body-parser');
 const async = require('async');
+const Nexmo = require('nexmo');
+
+const nexmo = new Nexmo({
+  apiKey: config.NEXMO_API_KEY,
+  apiSecret: config.NEXMO_API_SECRET
+});
 
 const qbo_thai = new quickbooks(config.QUICKBOOKS_CONSUMER_KEY,
                                 config.QUICKBOOKS_CONSUMER_SECRET,
@@ -78,6 +84,11 @@ app.use(session({
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
+
+// Send a text mesaage
+function pickupAlert(vendorName, orderId) {
+  nex.message.sendSms(vendorName, '07931155585', 'Your order ' + orderId + 'is ready for pick up from ' + vendorName );
+}
 
 // Select the right qbo object
 function selectQbo(id) {
@@ -215,6 +226,27 @@ app.post('/api/v1/vendors/:vendorId/orders/:orderId/items/:itemId', async (req, 
   });
 });
 
+// Mark an order as complete
+app.post('/api/v1/vendors/:vendorId/orders/:orderId', async (req, res) => {
+
+  var pgClient = await pgPool.connect();
+  var vendorId = req.params.vendorId;
+  var orderId = req.params.orderId;
+  var complete = JSON.parse(req.query.complete);
+  console.log(req.query.complete);
+  console.log(complete);
+  var query = 'UPDATE orders SET complete=$1 WHERE vendor_id=$2 AND order_id=$3;';
+  pgClient.query(query, [complete, vendorId, orderId], (err, results) => {
+    if(err) {
+      console.log(err);
+      res.err;
+    } else {
+      pgClient.release();
+      res.json({});
+    }
+  });
+});
+
 // View a particular order
 app.get('/api/v1/vendors/:vendorId/orders/:orderId', async (req, res) => {
 
@@ -270,14 +302,77 @@ app.get('/api/v1/vendors/:vendorId/orders', async (req, res) => {
   var vendorId = req.params.vendorId;
   var pgClient = await pgPool.connect();
  
-  var query = 'SELECT * FROM orders WHERE vendor_id=$1 AND complete=$2;';
+  var query = 'SELECT * FROM orders WHERE vendor_id=$1 AND complete=$2 ORDER BY order_id;';
   pgClient.query(query, [vendorId, false], (err, results) => {
     if(err){
       console.log(err);
       res.err;
     } else {
       pgClient.release();
-      res.json(results.rows);
+      var response = {};
+      var orders = [];
+      // Loop through all the rows
+      var rows = results.rows;
+      var curr_order_id;
+      var prev_order_id = 0;
+      for(var row of rows) {
+        curr_order_id = row.order_id;
+        if(curr_order_id != prev_order_id) {
+          var order = {};
+          order.timestamp = row.timestamp;
+          order.order_id = row.order_id;
+          order.pickup_id = row.pickup_id;
+          order.complete = row.complete;
+          var items = [];
+          // Add item
+          var item = {};
+          item.item_id = row.item_id;
+          item.item_name = row.item_name;
+          item.qty_ordered = row.qty_ordered;
+          item.qty_ready = row.qty_ready;
+          if(item.qty_ordered == item.qty_ready) {
+            item.ready = true;
+          }
+          items.push(item);
+          order.items = items;
+          orders.push(order);
+          prev_order_id = curr_order_id;
+        } else {
+          // Find the order
+          var order;
+          for(var ord in orders) {
+            if(ord.order_id == curr_order_id) {
+              order = ord;
+              break;
+            }
+          }
+          // Add item
+          var item = {};
+          item.item_id = row.item_id;
+          item.item_name = row.item_name;
+          item.qty_ordered = row.qty_ordered;
+          item.qty_ready = row.qty_ready;
+          if(item.qty_ordered == item.qty_ready) {
+            item.ready = true;
+          }
+          order.items.push(item);
+        }
+      }
+      
+      // Check if order is ready
+      for(var ord of orders) {
+        for(var item of ord.items) {
+          if(item.ready == true) {
+            ord.ready = true;
+            pickupAlert(vendorId, orderId);
+          } else {
+            ord.ready = false;
+            break;
+          }
+        }
+      }
+      response.orders = orders;
+      res.json(response);
     }
   }); 
 });
@@ -327,33 +422,6 @@ app.get('/api/v1/vendors', async (req, res) => {
   });
 });
 
-// app.get('/api/v1/orders', function (req, res) {
-//   res.json(
-//     {
-//       orders: [
-//         {
-//           timestamp: 123456789, // ms since epoch
-//           number: 12, // 01-99
-//           items: [
-//             {
-//               quantity: 3,
-//               description: "Phad Thai - Tofu",
-//               ready: 3,
-//             },
-//             {
-//               quantity: 2,
-//               description: "Thai Green Curry - Chicken",
-//               ready: 1,
-//             },
-//           ],
-//           ready: true,
-//           complete: false
-//         }
-//       ]
-//     }
-//   );
-// });
-
 app.use('/', express.static('public'));
  
 require('letsencrypt-express').create({
@@ -363,3 +431,4 @@ require('letsencrypt-express').create({
   approveDomains: config.LETSENCRYPT_DOMAINS,
   app: app
 }).listen(80, 443);
+
