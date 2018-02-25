@@ -37,11 +37,13 @@ export class OrderQueueComponent implements OnInit {
         this.poll.unsubscribe();
       }
       this.orderService.getOrders(this.vendorId).subscribe(orders => {
+        console.log(orders);
         this.dataSource = new MatTableDataSource(orders);
       });
       this.poll = Observable.interval(5000).switchMap((_1, _2) => {
         return this.orderService.getOrders(this.vendorId);
       }).subscribe(orders => {
+        console.log(orders);
         this.dataSource = new MatTableDataSource(orders);
       });
     });
@@ -56,5 +58,17 @@ export class OrderQueueComponent implements OnInit {
 
   applyFilter(filterValue: string) {
     this.dataSource.filter = filterValue.trim().toLowerCase();
+  } 
+
+  onItemReady(order: Order, item: OrderItem) {
+    this.orderService.setItemReady(this.vendorId, order.order_id, item.item_id, item.qty_ordered).subscribe(_ => {
+      console.log("Item set ready");
+    });
+  }
+
+  onOrderComplete(order: Order, item: OrderItem) {
+    this.orderService.setOrderComplete(this.vendorId, order.order_id).subscribe(_ => {
+      console.log("Order set complete");
+    });
   }
 }

@@ -21,12 +21,20 @@ export class OrderService {
   }
 
   getOrder(vendorId: number, orderId: number): Observable<Order> {
-    var promise = this.http.get<Order>(`${this.API_BASE_URL}/vendors/${vendorId}/orders/${orderId}`);
+    var promise = this.http.get<Order>(`${this.API_BASE_URL}/vendors/${vendorId}/orders/${orderId}`).map(o => (o instanceof Array) ? o[0] : o);
     return promise;
   }
 
   getOrders(vendorId: number): Observable<Order[]> {
     var promise = this.http.get<Orders>(`${this.API_BASE_URL}/vendors/${vendorId}/orders`).map(o => o.orders);
     return promise;
+  }
+
+  setItemReady(vendorId: number, orderId: number, itemId: number, ready: number) {
+    return this.http.post(`${this.API_BASE_URL}/vendors/${vendorId}/orders/${orderId}/items/${itemId}?ready=${ready}`, {}).map(o => {});
+  }
+
+  setOrderComplete(vendorId: number, orderId: number) {
+    return this.http.post(`${this.API_BASE_URL}/vendors/${vendorId}/orders/${orderId}?complete=true`, {}).map(o => {});
   }
 }

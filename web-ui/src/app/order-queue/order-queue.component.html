@@ -21,7 +21,7 @@
         <mat-cell *matCellDef="let order"> 
         
           <div *ngFor="let item of order.items">
-            <button mat-raised-button [disabled]="item.qty_ready >= item.qty_ordered" color="primary" class="btn btn-success" style="float: right; margin-top: -0.75em; margin-right: 1em;">Ready!</button>
+            <button mat-raised-button [disabled]="item.qty_ready >= item.qty_ordered" color="primary" class="btn btn-success" style="float: right; margin-top: -0.75em; margin-right: 1em;" (click)="onItemReady(order, item)">Ready!</button>
             <div style="margin-top: 2em; margin-bottom: 2em;"> {{item.item_name}} - {{item.qty_ready}} / {{item.qty_ordered}}</div>
           </div>
         </mat-cell>
@@ -30,7 +30,7 @@
       <ng-container matColumnDef="actions">
         <mat-header-cell *matHeaderCellDef style="flex: 0 0 9em;"> Actions </mat-header-cell>
         <mat-cell *matCellDef="let order" style="flex: 0 0 9em;"> 
-          <button mat-raised-button [disabled]="!order.ready && !order.completed" color="primary" class="btn btn-success">Completed!</button>
+          <button mat-raised-button [disabled]="!order.ready && !order.complete" color="primary" class="btn btn-success" (click)="onOrderComplete(order)">Completed!</button>
         </mat-cell>
       </ng-container>
 

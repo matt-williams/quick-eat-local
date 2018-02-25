@@ -19,8 +19,13 @@ import { MenuService } from './menu.service';
 import { OrderService } from './order.service';
 import { WaitOrderComponent } from './wait-order/wait-order.component';
 import { OrderQueueComponent } from './order-queue/order-queue.component';
+import { SplashComponent } from './splash/splash.component';
 
 const appRoutes: Routes = [
+  {
+    path: 'splash',
+    component: SplashComponent
+  },
   {
     path: 'locating',
     component: LocatingStatusComponent
@@ -46,7 +51,7 @@ const appRoutes: Routes = [
   //  component: StoreComponent
   //},
   { path: '',
-    redirectTo: '/locating',
+    redirectTo: '/splash',
     pathMatch: 'full'
   },
   //{ path: '**', component: PageNotFoundComponent }
@@ -59,7 +64,8 @@ const appRoutes: Routes = [
     VendorListComponent,
     MenuComponent,
     WaitOrderComponent,
-    OrderQueueComponent
+    OrderQueueComponent,
+    SplashComponent
   ],
   imports: [
     BrowserModule,
