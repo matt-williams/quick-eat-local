@@ -8,18 +8,18 @@
 
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-        <mat-cell *matCellDef="let vendor"> {{vendor.name}} </mat-cell>
+        <mat-cell *matCellDef="let vendor"> {{vendor.vendor_name}} </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="cuisine">
         <mat-header-cell *matHeaderCellDef> Cuisine </mat-header-cell>
-        <mat-cell *matCellDef="let vendor"> {{vendor.cuisine}} </mat-cell>
+        <mat-cell *matCellDef="let vendor"> {{vendor.vendor_cuisine}} </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="link">
         <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
         <mat-cell *matCellDef="let vendor">
-          <button mat-raised-button color="primary" [routerLink]="'/vendors/' + vendor.id" routerLinkActive="active">Go!</button>
+          <button mat-raised-button color="primary" [routerLink]="'/vendors/' + vendor.vendor_id" routerLinkActive="active">Go!</button>
         </mat-cell>
       </ng-container>
 

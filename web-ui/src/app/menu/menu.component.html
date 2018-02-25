@@ -21,14 +21,14 @@
           <mat-header-cell *matHeaderCellDef> Order </mat-header-cell>
           <mat-cell *matCellDef="let i = index">
             <mat-form-field>
-              <input matInput form-control-name="quantity" type="number" size="2" min="0" [(ngModel)]="model[i].quantity" [name]="i + '.quantity'">
+              <input matInput form-control-name="qty_ordered" type="number" size="2" min="0" [(ngModel)]="model[i].qty_ordered" [name]="i + '.qty_ordered'">
             </mat-form-field>
           </mat-cell>
         </ng-container>
 
         <ng-container matColumnDef="totalPrice">
           <mat-header-cell *matHeaderCellDef> Total </mat-header-cell>
-          <mat-cell *matCellDef="let item; let i = index"> {{(item.price * model[i].quantity) | currency:item.priceCurrency}} </mat-cell>
+          <mat-cell *matCellDef="let item; let i = index"> {{(item.price * model[i].qty_ordered) | currency:item.priceCurrency}} </mat-cell>
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>

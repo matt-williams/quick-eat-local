@@ -6,10 +6,6 @@ import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import 'rxjs/add/operator/map';
 
-class Vendors {
-  vendors: Vendor[];
-}
-
 @Injectable()
 export class VendorService {
   private vendorsUrl = 'http://quick.eat.local.uk.to:8081/api/v1/vendors';
@@ -17,10 +13,7 @@ export class VendorService {
   constructor(private http: HttpClient) { }
 
   getVendors(location: string): Observable<Vendor[]> {
-    var promise = this.http.get<Vendors>(this.vendorsUrl).map(o => {
-      console.log(o);
-      return o.vendors;
-    });
+    var promise = this.http.get<Vendor[]>(this.vendorsUrl);
     return promise;
   }
 }

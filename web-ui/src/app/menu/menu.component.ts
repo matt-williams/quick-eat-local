@@ -33,7 +33,7 @@ export class MenuComponent implements OnInit {
     
       this.menuService.getMenu(this.vendorId).subscribe(menu => {
         this.dataSource = new MatTableDataSource(menu.menu);
-        this.model = menu.menu.map(o => {return {id: o.id, quantity: 0};});
+        this.model = menu.menu.map(o => {return {item_id: o.id, qty_ordered: 0};});
       });
     });
   }
@@ -43,8 +43,8 @@ export class MenuComponent implements OnInit {
   }
 
   onSubmit() {
-    this.orderService.createOrder(this.vendorId, this.model.filter(o => o.quantity > 0)).subscribe(order => {
-      this.router.navigate(["orders", order.id], {relativeTo: this.route});
+    this.orderService.createOrder(this.vendorId, this.model.filter(o => o.qty_ordered > 0)).subscribe(order => {
+      this.router.navigate(["orders", order.order_id], {relativeTo: this.route});
     });
   }
 

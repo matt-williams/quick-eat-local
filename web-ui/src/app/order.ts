@@ -1,7 +1,8 @@
 export class Order {
   timestamp: number;
-  id: number;
-  number: number;
+  vendor_id: number;
+  order_id: number;
+  pickup_id: number;
   items: OrderItem[];
   ready: boolean;
   complete: boolean;
@@ -9,7 +10,7 @@ export class Order {
 
 export class OrderItem {
   qty_ordered: number;
-  id: number;
-  description: string;
+  item_id: number;
+  name: string;
   qty_ready: number;
 }
