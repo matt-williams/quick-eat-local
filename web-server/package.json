@@ -16,6 +16,7 @@
     "express-session": "^1.15.6",
     "json-override": "^0.2.0",
     "letsencrypt-express": "^2.0.6",
+    "nexmo": "^2.2.0",
     "node-quickbooks": "^2.0.24",
     "pg": "^7.4.1",
     "pg-escape": "^0.2.0",
