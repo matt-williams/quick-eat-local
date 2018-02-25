@@ -21,7 +21,7 @@
         <mat-cell *matCellDef="let order"> 
         
           <div *ngFor="let item of order.items">
-            <button mat-raised-button [disabled]="item.qty_ready >= item.qty_ordered" color="primary" class="btn btn-success" style="float: right; margin-top: -0.5em; margin-right: 1em;">Ready!</button>
+            <button mat-raised-button [disabled]="item.qty_ready >= item.qty_ordered" color="primary" class="btn btn-success" style="float: right; margin-top: -0.75em; margin-right: 1em;">Ready!</button>
             <div style="margin-top: 2em; margin-bottom: 2em;"> {{item.name}} - {{item.qty_ready}} / {{item.qty_ordered}}</div>
           </div>
         </mat-cell>
