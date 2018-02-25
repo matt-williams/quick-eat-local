@@ -181,7 +181,8 @@ app.get('/api/v1/stores/:storeId/menu', function (req, res) {
 app.post('/api/v1/store/:storeId/orders', function (req, res) {
 
   var order = req.body.order;
-  var qbo = selectQbo(req.params.storeId);
+  var vendorId = req.params.storeId;
+  var qbo = selectQbo(vendorId);
 
   // Get item ids
   var parallel = [];
@@ -211,39 +212,60 @@ app.post('/api/v1/store/:storeId/orders', function (req, res) {
     var transaction = {};
     transaction.Line = line;
     console.log(transaction);
-    qbo.createSalesReceipt(transaction, function(err, results) {
+    qbo.createSalesReceipt(transaction, async (err, results) => {
       if(err) {
         console.log(err.Fault.Error);
         res.err;
       } else {
-        console.log(results);
+        // Update order database
+        var pgClient = await pgPool.connect();
+        const sequence = await pgClient.query("SELECT nextval('pickup_id');");
+        var pickupId = sequence.rows[0].nextval;
+//      const complete = await pgClient.query("SELECT DISTINCT complete FROM orders WHERE vendor_id=$1 AND order_id=$2;", [vendorId, results.Id]);
+        for(var ord of order) {
+          pgClient.query('INSERT INTO orders(vendor_id, order_id, item_id, qty_ordered, qty_ready, pickup_id, complete) VALUES($1, $2, $3, $4, $5, $6, $7);', [vendorId, results.Id, ord.item_id, ord.qty_ordered, 0, pickupId, false]);
+          ord.qty_ready = 0;
+        }
+
+        // Build and return response
+        var createTime = results.MetaData.CreateTime;
+        var timestamp = Date.parse(createTime);
+        var response = {};
+        response.timestamp = timestamp;
+        response.vendor_id = vendorId;
+        response.pickup_id = pickupId;
+        response.items = order;
+        response.ready = false;
+        response.complete = false;
+
+        res.json(response);
       }
     });
   });
 
-  res.json(
-    {
-      timestamp: 123456789, // ms since epoch
-      id: "abcdef23232",
-      number: 12, // 01-99
-      items: [
-        {
-          quantity: 3,
-          id: "abcdef12567",
-          description: "Phad Thai - Tofu",
-          ready: 3,
-        },
-        {
-          quantity: 2,
-          id: "abcdef12569",
-          description: "Thai Green Curry - Chicken",
-          ready: 1,
-        },
-      ],
-      ready: true,
-      complete: false
-    }
-  );
+//  res.json(
+//    {
+//      timestamp: 123456789, // ms since epoch
+//      id: "abcdef23232", // order id
+//      number: 12, // 01-99 pickup id
+//      items: [
+//        {
+//          quantity: 3,
+//          id: "abcdef12567",
+//          description: "Phad Thai - Tofu",
+//          ready: 3,
+//        },
+//        {
+//          quantity: 2,
+//          id: "abcdef12569",
+//          description: "Thai Green Curry - Chicken",
+//          ready: 1,
+//        },
+//      ],
+//      ready: true,
+//      complete: false
+//    }
+//  );
 });
 
 app.use('/', express.static('public'));
