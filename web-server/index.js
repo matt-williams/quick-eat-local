@@ -7,6 +7,8 @@ const session = require('express-session');
 const quickbooks = require('node-quickbooks');
 const pg = require('pg');
 const pgEscape = require('pg-escape');
+const bodyParser = require('body-parser');
+const async = require('async');
 
 const qbo_thai = new quickbooks(config.QUICKBOOKS_CONSUMER_KEY,
                                 config.QUICKBOOKS_CONSUMER_SECRET,
@@ -74,6 +76,9 @@ app.use(session({
 }));
 // Can now read/write from req.session...
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
+
 app.get('/api/v1/stores', async (req, res) => {
   var pgClient = await pgPool.connect();
   var query = 'SELECT 1';
@@ -132,7 +137,7 @@ app.get('/api/v1/stores/:storeId', function (req, res) {
   var qbo = selectQbo(id);
   qbo.getCompanyInfo(id, function(err, results){
      if(err) { 
-       console.log(err.fault.error);
+       console.log(err);
        res.err; 
      } else {
        var info = {};
@@ -174,11 +179,48 @@ app.get('/api/v1/stores/:storeId/menu', function (req, res) {
 
 // Place an order - might need to redirect in future to provide payment
 app.post('/api/v1/store/:storeId/orders', function (req, res) {
-  console.log(req);
-//  const body = req.body.Body;
-  console.log(body); 
+
+  var order = req.body.order;
   var qbo = selectQbo(req.params.storeId);
-  
+
+  // Get item ids
+  var parallel = [];
+  for(var i = 0; i < order.length; i++) {
+    parallel[i] = (function(i) {return function (callback) { qbo.getItem(order[i].item_id, callback) }})(i);
+  }
+
+  // Compute line item amount - synchronous 
+  async.parallel(parallel, function (err, items) {
+    // Create sales receipt
+    var line = [];
+    var salesReceipt = {};
+    for(var i = 0; i < order.length; i++) {
+      var lineItem = {};
+      var salesItemLineDetail = {};
+      var itemRef = {};
+      itemRef.value = order[i].item_id;
+      salesItemLineDetail.ItemRef = itemRef;
+      salesItemLineDetail.Qty = order[i].qty_ordered;
+      lineItem.LineNum = i+1;
+      lineItem.Amount = items[i].UnitPrice * order[i].qty_ordered;
+      lineItem.DetailType = "SalesItemLineDetail";
+      lineItem.SalesItemLineDetail = salesItemLineDetail;
+      line.push(lineItem);
+    }
+
+    var transaction = {};
+    transaction.Line = line;
+    console.log(transaction);
+    qbo.createSalesReceipt(transaction, function(err, results) {
+      if(err) {
+        console.log(err.Fault.Error);
+        res.err;
+      } else {
+        console.log(results);
+      }
+    });
+  });
+
   res.json(
     {
       timestamp: 123456789, // ms since epoch
