@@ -1,0 +1,38 @@
+<section class="mat-typography" *ngIf="order">
+  <mat-tab-group>
+    <mat-tab label="Progress">
+      <h1 style="text-align: center; margin-top: 1em; margin-bottom: 1em;">
+        Order #{{ order.pickup_id }} - {{ readyOrders }} / {{ totalOrders }}
+      </h1>
+      <div style="margin: auto; width: 100px; height: 500px;" *ngIf="readyOrders < totalOrders">
+        <mat-spinner></mat-spinner>
+      </div>
+      <div style="margin: auto; width: 100px; height: 500px;" *ngIf="readyOrders >= totalOrders">
+        <i class="material-icons" style="margin: auto; width: 100px; height: 100px;">tick</i>
+      </div>
+    </mat-tab>
+    <mat-tab label="Location">
+      <h1>TODO!</h1>
+    </mat-tab>
+    <mat-tab label="Order">
+      <h1 style="text-align: center; height: 500px; font-size: 20em; margin-top: 0.5em;">{{ order.pickup_id }}</h1>
+    </mat-tab>
+    <mat-tab label="Order Details">
+      <mat-table #table [dataSource]="dataSource" matSort>
+
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.name}} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="order">
+          <mat-header-cell *matHeaderCellDef> Order </mat-header-cell>
+          <mat-cell *matCellDef="let item"> <span *ngIf="readyOrders < totalOrders">{{item.qty_ready}} / </span>{{item.qty_ordered}} </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </mat-tab>
+  </mat-tab-group>
+</section>

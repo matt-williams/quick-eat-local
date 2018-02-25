@@ -12,7 +12,7 @@ export class MenuService {
 
   constructor(private http: HttpClient) { }
 
-  getMenu(vendorId: string): Observable<Menu> {
+  getMenu(vendorId: number): Observable<Menu> {
     var promise = this.http.get<Menu>(`${this.API_BASE_URL}/vendors/${vendorId}/menu`);
     return promise;
   }

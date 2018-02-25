@@ -19,7 +19,7 @@
       <ng-container matColumnDef="link">
         <mat-header-cell *matHeaderCellDef> Link </mat-header-cell>
         <mat-cell *matCellDef="let vendor">
-          <button mat-raised-button [routerLink]="'/vendors/' + vendor.id" routerLinkActive="active">Go!</button>
+          <button mat-raised-button color="primary" [routerLink]="'/vendors/' + vendor.id" routerLinkActive="active">Go!</button>
         </mat-cell>
       </ng-container>
 

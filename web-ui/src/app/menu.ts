@@ -3,7 +3,7 @@ export class Menu {
 }
 
 export class Item {
-  id: string;
+  id: number;
   name: string;
   description: string;
   price: number;

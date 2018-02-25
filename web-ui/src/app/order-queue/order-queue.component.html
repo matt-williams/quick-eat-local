@@ -1,0 +1,41 @@
+<div>
+  <mat-form-field>
+    <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
+  </mat-form-field>
+
+  <div class="mat-elevation-z8">
+    <mat-table #table [dataSource]="dataSource" matSort>
+
+      <ng-container matColumnDef="time">
+        <mat-header-cell *matHeaderCellDef style="flex: 0 0 8em;"> Time </mat-header-cell>
+        <mat-cell *matCellDef="let order" style="flex: 0 0 8em;"> {{order.timestamp | date:"mediumTime"}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="pickup">
+        <mat-header-cell *matHeaderCellDef style="flex: 0 0 5em;"> Order # </mat-header-cell>
+        <mat-cell *matCellDef="let order" style="flex: 0 0 5em;"> {{order.pickup_id}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="order">
+        <mat-header-cell *matHeaderCellDef> Details </mat-header-cell>
+        <mat-cell *matCellDef="let order"> 
+        
+          <div *ngFor="let item of order.items">
+            <button mat-raised-button [disabled]="item.qty_ready >= item.qty_ordered" color="primary" class="btn btn-success" style="float: right; margin-top: -0.5em; margin-right: 1em;">Ready!</button>
+            <div style="margin-top: 2em; margin-bottom: 2em;"> {{item.name}} - {{item.qty_ready}} / {{item.qty_ordered}}</div>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef style="flex: 0 0 9em;"> Actions </mat-header-cell>
+        <mat-cell *matCellDef="let order" style="flex: 0 0 9em;"> 
+          <button mat-raised-button [disabled]="!order.ready && !order.completed" color="primary" class="btn btn-success">Completed!</button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </div>
+</div>

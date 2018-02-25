@@ -1,5 +1,5 @@
 export class Vendor {
-  id: string;
+  id: number;
   name: string;
   cuisine: string;
 }

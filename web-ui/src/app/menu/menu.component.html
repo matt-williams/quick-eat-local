@@ -1,44 +1,44 @@
 <div>
   <form #orderForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
-    <div style="margin-bottom: 1em">
-      <button type="submit"
-              [disabled]="orderForm.pristine" class="btn btn-success">Order!</button>
-    </div>
-
     <mat-form-field>
       <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Filter">
     </mat-form-field>
 
     <div class="mat-elevation-z8">
-        <mat-table #table [dataSource]="dataSource" matSort>
+      <mat-table #table [dataSource]="dataSource" matSort>
 
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
-            <mat-cell *matCellDef="let item"> {{item.name}} </mat-cell>
-          </ng-container>
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.name}} </mat-cell>
+        </ng-container>
 
-          <ng-container matColumnDef="price">
-            <mat-header-cell *matHeaderCellDef> Price </mat-header-cell>
-            <mat-cell *matCellDef="let item"> {{item.price | currency:item.priceCurrency}} </mat-cell>
-          </ng-container>
+        <ng-container matColumnDef="price">
+          <mat-header-cell *matHeaderCellDef> Price </mat-header-cell>
+          <mat-cell *matCellDef="let item"> {{item.price | currency:item.priceCurrency}} </mat-cell>
+        </ng-container>
 
-          <ng-container matColumnDef="order">
-            <mat-header-cell *matHeaderCellDef> Order </mat-header-cell>
-            <mat-cell *matCellDef="let i = index">
-              <mat-form-field>
-                <input matInput form-control-name="quantity" type="number" size="2" min="0" [(ngModel)]="model[i].quantity" [name]="i + '.quantity'">
-              </mat-form-field>
-            </mat-cell>
-          </ng-container>
+        <ng-container matColumnDef="order">
+          <mat-header-cell *matHeaderCellDef> Order </mat-header-cell>
+          <mat-cell *matCellDef="let i = index">
+            <mat-form-field>
+              <input matInput form-control-name="quantity" type="number" size="2" min="0" [(ngModel)]="model[i].quantity" [name]="i + '.quantity'">
+            </mat-form-field>
+          </mat-cell>
+        </ng-container>
 
-          <ng-container matColumnDef="totalPrice">
-            <mat-header-cell *matHeaderCellDef> Total </mat-header-cell>
-            <mat-cell *matCellDef="let item"> {{(item.price * model[item.id]) | currency:item.priceCurrency}} </mat-cell>
-          </ng-container>
+        <ng-container matColumnDef="totalPrice">
+          <mat-header-cell *matHeaderCellDef> Total </mat-header-cell>
+          <mat-cell *matCellDef="let item; let i = index"> {{(item.price * model[i].quantity) | currency:item.priceCurrency}} </mat-cell>
+        </ng-container>
 
-          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-        </mat-table>
-      </div>
-    </form>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </div>
+
+    <div style="margin-top: 1em;">
+      <button mat-raised-button color="primary" type="submit"
+              [disabled]="orderForm.pristine" class="btn btn-success">Order!</button>
+    </div>
+  </form>
 </div>

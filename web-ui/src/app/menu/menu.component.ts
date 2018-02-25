@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { MatSort, MatTableDataSource } from '@angular/material';
 import { Menu, Item } from '../menu';
 import { MenuService } from '../menu.service';
+import { OrderService } from '../order.service';
 
 @Component({
   selector: 'app-menu',
@@ -13,13 +14,16 @@ import { MenuService } from '../menu.service';
 export class MenuComponent implements OnInit {
   displayedColumns = ['name', 'price', 'order', 'totalPrice'];
   dataSource: MatTableDataSource<Item>;
-  vendorId: string = "";
+  vendorId: number;
   private sub: any;
   model = []; 
 
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor(private route: ActivatedRoute, private menuService: MenuService) {
+  constructor(private route: ActivatedRoute,
+              private router: Router,
+              private menuService: MenuService,
+              private orderService: OrderService) {
     this.dataSource = new MatTableDataSource([]);
   }
 
@@ -34,8 +38,14 @@ export class MenuComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
+
   onSubmit() {
-    console.log(this.model.filter(o => o.quantity > 0));
+    this.orderService.createOrder(this.vendorId, this.model.filter(o => o.quantity > 0)).subscribe(order => {
+      this.router.navigate(["orders", order.id], {relativeTo: this.route});
+    });
   }
 
   applyFilter(filterValue: string) {
