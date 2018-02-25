@@ -68,7 +68,7 @@ const appRoutes: Routes = [
     FormsModule,
     RouterModule.forRoot(
       appRoutes,
-      { enableTracing: true }
+      { useHash: true }
     ),
     MatToolbarModule,
     MatProgressSpinnerModule,
