@@ -79,9 +79,10 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
-app.get('/api/v1/stores', async (req, res) => {
+// Get all vendors
+app.get('/api/v1/vendors', async (req, res) => {
   var pgClient = await pgPool.connect();
-  var query = 'SELECT 1';
+  var query = 'SELECT * FROM vendors';
   pgClient.query(query, (err, results) => {
     pgClient.release();
     res.json(results.rows);
@@ -130,33 +131,21 @@ function selectQbo(id) {
   }
 }
 
-// Get details for specific store
-app.get('/api/v1/stores/:storeId', function (req, res) {
+// Get details for specific vendor
+app.get('/api/v1/vendors/:vendorId', async (req, res) => {
 
-  var id = req.params.storeId;
-  var qbo = selectQbo(id);
-  qbo.getCompanyInfo(id, function(err, results){
-     if(err) { 
-       console.log(err);
-       res.err; 
-     } else {
-       var info = {};
-       info.name = results.CompanyName;
-       res.json(info);
-     }
+  var pgClient = await pgPool.connect();
+  var query = 'SELECT * FROM vendors WHERE vendor_id=$1;';
+  pgClient.query(query,[req.params.vendorId], (err, results) => {
+    pgClient.release();
+    res.json(results.rows);
   });
-//   res.json(
-//     {
-//       name: "My food shop",
-//       cuisine: "Japanese",
-//     }
-//   );
 });
 
-// Get menu for specific store
-app.get('/api/v1/stores/:storeId/menu', function (req, res) {
-  var qbo = selectQbo(req.params.storeId);
+// Get menu for specific vendor
+app.get('/api/v1/vendors/:vendorId/menu', function (req, res) {
 
+  var qbo = selectQbo(req.params.vendorId);
   qbo.findItems({type: 'Inventory'}, function(err, results) {
     if(err) {
       console.log(err.fault.error);
@@ -178,10 +167,10 @@ app.get('/api/v1/stores/:storeId/menu', function (req, res) {
 });
 
 // Place an order - might need to redirect in future to provide payment
-app.post('/api/v1/store/:storeId/orders', function (req, res) {
+app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
 
   var order = req.body.order;
-  var vendorId = req.params.storeId;
+  var vendorId = req.params.vendorId;
   var qbo = selectQbo(vendorId);
 
   // Get item ids
@@ -226,6 +215,7 @@ app.post('/api/v1/store/:storeId/orders', function (req, res) {
           pgClient.query('INSERT INTO orders(vendor_id, order_id, item_id, qty_ordered, qty_ready, pickup_id, complete) VALUES($1, $2, $3, $4, $5, $6, $7);', [vendorId, results.Id, ord.item_id, ord.qty_ordered, 0, pickupId, false]);
           ord.qty_ready = 0;
         }
+        pgClient.release();
 
         // Build and return response
         var createTime = results.MetaData.CreateTime;
@@ -242,30 +232,48 @@ app.post('/api/v1/store/:storeId/orders', function (req, res) {
       }
     });
   });
+});
 
-//  res.json(
-//    {
-//      timestamp: 123456789, // ms since epoch
-//      id: "abcdef23232", // order id
-//      number: 12, // 01-99 pickup id
-//      items: [
-//        {
-//          quantity: 3,
-//          id: "abcdef12567",
-//          description: "Phad Thai - Tofu",
-//          ready: 3,
-//        },
-//        {
-//          quantity: 2,
-//          id: "abcdef12569",
-//          description: "Thai Green Curry - Chicken",
-//          ready: 1,
-//        },
-//      ],
-//      ready: true,
-//      complete: false
-//    }
-//  );
+// Update number of ready items for a specific order
+app.post('/api/v1/vendors/:vendorId/orders/:orderId/items/:itemId', async (req, res) => {
+
+  var pgClient = await pgPool.connect();
+  var vendorId = req.params.vendorId;
+  var orderId = req.params.orderId;
+  var itemId = req.params.itemId;
+  var qty_ready = parseInt(req.query.ready, 10);
+  var query = 'UPDATE orders SET qty_ready=$1 WHERE vendor_id=$2 AND order_id=$3 AND item_id=$4;';
+  pgClient.query(query, [qty_ready, vendorId, orderId, itemId], (err, results) => {
+    if(err) {
+        console.log(err);
+        res.err;
+    } else {
+      var select = 'SELECT * FROM orders WHERE vendor_id=$1 AND order_id=$2;';
+      pgClient.query(select, [vendorId, orderId], (err, results) => {
+        if(err) {
+          console.log(err);
+          res.err;
+        } else {
+          // Check if order is now ready
+          //var complete = false;
+          //var items = results.rows;
+          //for(var item of items) {
+          //  if(item.qty_ordered = item.qty_ready) {
+          //    var update = 'UPDATE orders SET complete=true WHERE vendor_id=$1 AND order_id=$2 AND item_id=$3;';
+          //    pgClient.query(update, [vendorId, orderId, itemId], (err, results) => {
+          //      if(err) {
+          //        console.log(err);
+          //        res.err;
+          //      }
+          //    }
+          //  }
+          //}
+          res.json(results.rows);
+          pgClient.release();
+        }
+      });
+    }
+  });
 });
 
 app.use('/', express.static('public'));
