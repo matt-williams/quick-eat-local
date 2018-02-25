@@ -234,6 +234,52 @@ app.post('/api/v1/vendors/:vendorId/orders', function (req, res) {
   });
 });
 
+// View list of outstanding orders
+app.get('/api/v1/vendors/:vendorId/orders', async (req, res) => {
+  
+  var vendorId = req.params.vendorId;
+  var pgClient = await pgPool.connect();
+ 
+  var query = 'SELECT * FROM orders WHERE vendor_id=$1 AND complete=$2;';
+  pgClient.query(query, [vendorId, false], (err, results) => {
+    if(err){
+      console.log(err);
+      res.err;
+    } else {
+      pgClient.release();
+      res.json(results.rows);
+    }
+  }); 
+});
+
+  //res.json(
+  //  {
+  //    orders: [
+  //      {
+  //        timestamp: 123456789, // ms since epoch
+  //        id: 23232,
+  //        pickup_id: 12, // 01-99
+  //        items: [
+  //          {
+  //            quantity: 3,
+  //            id: 12567,
+  //            description: "Phad Thai - Tofu",
+  //            ready: 3,
+  //          },
+  //          {
+  //            quantity: 2,
+  //            id: 12569,
+  //            description: "Thai Green Curry - Chicken",
+  //            ready: 1,
+  //          },
+  //        ],
+  //        ready: false,
+  //        complete: false
+  //      }
+  //    ]
+  //  }
+  //);
+
 // Update number of ready items for a specific order
 app.post('/api/v1/vendors/:vendorId/orders/:orderId/items/:itemId', async (req, res) => {
 
