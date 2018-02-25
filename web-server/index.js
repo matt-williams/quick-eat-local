@@ -86,8 +86,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
 // Send a text mesaage
-function pickupAlert(vendorName, orderId) {
-  nex.message.sendSms(vendorName, '07931155585', 'Your order ' + orderId + 'is ready for pick up from ' + vendorName );
+var pickupAlert = async (vendorId, pickupId) => {
+  var pgClient = await pgPool.connect();
+  var query = 'SELECT * FROM vendors WHERE vendor_id=$1;';
+  pgClient.query(query,[vendorId], (err, results) => {
+    pgClient.release();
+    console.log(results.rows);
+    var vendorName = results.rows[0].vendor_name;
+    var text = 'Your order ' + pickupId + ' is ready for pick up from ' + vendorName;
+    nexmo.message.sendSms(vendorName, '447973344381',text);
+  });
 }
 
 // Select the right qbo object
@@ -233,8 +241,6 @@ app.post('/api/v1/vendors/:vendorId/orders/:orderId', async (req, res) => {
   var vendorId = req.params.vendorId;
   var orderId = req.params.orderId;
   var complete = JSON.parse(req.query.complete);
-  console.log(req.query.complete);
-  console.log(complete);
   var query = 'UPDATE orders SET complete=$1 WHERE vendor_id=$2 AND order_id=$3;';
   pgClient.query(query, [complete, vendorId, orderId], (err, results) => {
     if(err) {
@@ -364,7 +370,9 @@ app.get('/api/v1/vendors/:vendorId/orders', async (req, res) => {
         for(var item of ord.items) {
           if(item.ready == true) {
             ord.ready = true;
-            pickupAlert(vendorId, orderId);
+            if(ord.complete != true) {
+              pickupAlert(vendorId, ord.pickup_id);
+            }
           } else {
             ord.ready = false;
             break;
@@ -403,7 +411,6 @@ app.get('/api/v1/vendors/:vendorId/menu', function (req, res) {
 
 // Get details for specific vendor
 app.get('/api/v1/vendors/:vendorId', async (req, res) => {
-
   var pgClient = await pgPool.connect();
   var query = 'SELECT * FROM vendors WHERE vendor_id=$1;';
   pgClient.query(query,[req.params.vendorId], (err, results) => {
