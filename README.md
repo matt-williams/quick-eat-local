@@ -3,7 +3,7 @@ Fast, convenient foodhall service
 
 ![Quick Eat Local Icon](quick-eat-local.png)
 
-Try it at [https://quick.eat.local.uk.to/].
+Try it at [https://quick.eat.local.uk.to/](quick.eat.local.uk.to).
 
 ## Local development
 
