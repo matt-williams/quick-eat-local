@@ -11,6 +11,6 @@ export class Order {
 export class OrderItem {
   qty_ordered: number;
   item_id: number;
-  name: string;
+  item_name: string;
   qty_ready: number;
 }
